@@ -10,14 +10,6 @@ services:
       container_name: zap-scanner
       depends_on:
         - bola-api
-      command: >
-        zap-api-scan.py
-        -t http://bola-api:3000/openapi.json
-        -f openapi
-        -g gen.conf
-        -r zap-api-report.html
-        -a
-        -d
-        -I
+      command: tail -f /dev/null   # Prevents auto-start
       volumes:
         - ./zap-reports:/zap/wrk
