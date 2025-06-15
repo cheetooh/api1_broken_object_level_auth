@@ -1,0 +1,42 @@
+name: ZAP API Scan - BOLA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  zap-scan:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Start only the API
+      run: docker-compose up -d bola-api
+
+    - name: Wait for API to be ready
+      run: sleep 10
+
+    - name: Run ZAP API scan manually
+      run: |
+        docker run --rm \
+          --network host \
+          -v ${{ github.workspace }}/zap-reports:/zap/wrk \
+          zaproxy/zap-stable \
+          zap-api-scan.py \
+          -t http://localhost:3000/openapi.json \
+          -f openapi \
+          -g gen.conf \
+          -r zap-report.html \
+          -a -I
+
+    - name: Upload ZAP HTML Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: ZAP HTML Report
+        path: zap-reports/zap-report.html
+
+    - name: Tear down services
+      run: docker-compose down
