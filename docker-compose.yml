@@ -1,0 +1,23 @@
+services:
+  bola-api:
+    build: .
+    container_name: bola-api-js
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+  zap:
+      image: zaproxy/zap-stable
+      container_name: zap-scanner
+      depends_on:
+        - bola-api
+      command: >
+        zap-api-scan.py
+        -t http://bola-api:3000/openapi.json
+        -f openapi
+        -g gen.conf
+        -r zap-api-report.html
+        -a
+        -d
+        -I
+      volumes:
+        - ./zap-reports:/zap/wrk
